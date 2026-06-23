@@ -1,0 +1,33 @@
+## WinBUGS model for Exercise 3: Beta-Binomial (Esophageal Cancer)
+##
+## Model:   y[i] ~ Binomial(p[i], n[i])
+## Priors:  p[1] ~ Beta(2, 38)    -- informative (past study: 2 cases in 40)
+##          p[2] ~ Beta(1, 1)     -- diffuse
+##          p[3] ~ Beta(1, 1)     -- diffuse
+##          p[4] ~ Beta(1, 1)     -- diffuse
+##
+## Odds Ratios computed relative to reference category 1 (0-39 g/day).
+## OR > 1 indicates higher cancer odds compared to the reference.
+## All CrIs should exclude 1 for statistical significance.
+
+model {
+
+  ## Likelihood
+  for (i in 1:N) {
+    y[i] ~ dbin(p[i], n[i])
+  }
+
+  ## Informative prior for dose=1 category (0-39 g/day)
+  ## Based on hypothetical past study: 2 cases in 40 trials => mean = 0.05
+  p[1] ~ dbeta(2, 38)
+
+  ## Diffuse priors for remaining categories
+  p[2] ~ dbeta(1, 1)
+  p[3] ~ dbeta(1, 1)
+  p[4] ~ dbeta(1, 1)
+
+  ## Odds Ratios vs reference category (p[1])
+  OR2 <- (p[2] / (1 - p[2])) / (p[1] / (1 - p[1]))
+  OR3 <- (p[3] / (1 - p[3])) / (p[1] / (1 - p[1]))
+  OR4 <- (p[4] / (1 - p[4])) / (p[1] / (1 - p[1]))
+}

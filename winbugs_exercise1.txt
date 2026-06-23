@@ -1,0 +1,40 @@
+## WinBUGS model for Exercise 1: Bayesian Linear Regression
+##
+## Model:   Y_i ~ N(mu_i, tau)   where tau = 1/sigma^2
+## Priors:  beta_j | tau ~ N(0, prec_beta)   where prec_beta = tau * 0.0001
+##          tau ~ Gamma(0.0001, 0.0001)        <=> sigma^2 ~ IG(0.0001, 0.0001)
+##
+## Prior on beta: beta | sigma^2 ~ N(0, sigma^2 * M^{-1})
+##   with M^{-1} = 10000 * I => prior precision = tau * (1/10000) = tau * 0.0001
+##   (very diffuse prior; posterior ≈ OLS)
+##
+## WinBUGS parameterizes Normal as dnorm(mean, precision), NOT dnorm(mean, variance).
+## prec_beta must be defined as a deterministic node (cannot be an expression
+## containing a stochastic node directly inside dnorm()).
+
+model {
+
+  ## Derived precision for beta (depends on tau, which is stochastic)
+  prec_beta <- tau * 0.0001
+
+  ## Priors for regression coefficients
+  beta0 ~ dnorm(0, prec_beta)
+  for (j in 1:15) {
+    beta[j] ~ dnorm(0, prec_beta)
+  }
+
+  ## Prior for precision (= 1/sigma^2)
+  tau    ~ dgamma(0.0001, 0.0001)
+  sigma2 <- 1 / tau
+
+  ## Likelihood
+  for (i in 1:n) {
+    y[i]  ~ dnorm(mu[i], tau)
+    mu[i] <- beta0 +
+             beta[1]  * X[i, 1]  + beta[2]  * X[i, 2]  + beta[3]  * X[i, 3]  +
+             beta[4]  * X[i, 4]  + beta[5]  * X[i, 5]  + beta[6]  * X[i, 6]  +
+             beta[7]  * X[i, 7]  + beta[8]  * X[i, 8]  + beta[9]  * X[i, 9]  +
+             beta[10] * X[i, 10] + beta[11] * X[i, 11] + beta[12] * X[i, 12] +
+             beta[13] * X[i, 13] + beta[14] * X[i, 14] + beta[15] * X[i, 15]
+  }
+}
